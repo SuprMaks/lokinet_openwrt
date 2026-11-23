@@ -112,10 +112,10 @@ emit_list network auth_whitelist auth-whitelist
 emit_list network auth_file auth-file
 emit_scalar network auth_file_type auth-file-type
 emit_list network auth_static auth-static
-emit_scalar network reachable bool
+emit_scalar network reachable reachable bool
 emit_scalar network hops
 emit_scalar network paths
-emit_scalar network exit bool
+emit_scalar network exit exit bool
 emit_scalar network owned_range owned-range
 emit_list network traffic_whitelist traffic-whitelist
 emit_list network exit_node exit-node
@@ -149,7 +149,7 @@ emit_outbound
 
 # [api]
 emit_section api
-emit_scalar api enabled bool
+emit_scalar api enabled enabled bool
 emit_scalar api bind
 
 # [bootstrap]
