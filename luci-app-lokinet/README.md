@@ -43,5 +43,10 @@ Do not run a second `lokinet` process manually after enabling procd.
 - The generator emits only options explicitly present in UCI.
 - Boolean UCI values `1`/`0` are emitted as `true`/`false`.
 - `ip6_range` can be explicitly set to an empty string to emit `ip6-range=`.
+- Outbound socket binding supports a manual address or the current IPv4 address
+  of a selected logical OpenWrt interface. In interface mode, an `ifup` event
+  for that interface regenerates the configuration and restarts Lokinet only
+  when its procd-managed instance is already running. It never starts a
+  deliberately stopped service.
 - The package does not modify firewall zones or policy routing. Those remain
   separate OpenWrt network/firewall configuration tasks.

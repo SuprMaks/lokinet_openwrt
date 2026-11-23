@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Only react when the selected logical interface becomes available.
+[ "$ACTION" = "ifup" ] || exit 0
+
+mode="$(uci -q get lokinet.bind.outbound_mode 2>/dev/null)"
+[ "$mode" = "interface" ] || exit 0
+
+selected="$(uci -q get lokinet.bind.outbound_interface 2>/dev/null)"
+[ -n "$selected" ] && [ "$INTERFACE" = "$selected" ] || exit 0
+
+# Do not start Lokinet from hotplug: the service may have been deliberately
+# stopped or disabled by the user. Check the procd-managed instance itself.
+running="$(ubus call service list '{"name":"lokinet"}' 2>/dev/null | jsonfilter -e '@.lokinet.instances.*.running' 2>/dev/null)"
+case "$running" in
+	*true*) ;;
+	*) exit 0 ;;
+esac
+
+/etc/init.d/lokinet restart

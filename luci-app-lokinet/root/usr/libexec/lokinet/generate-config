@@ -65,6 +65,34 @@ emit_section() {
 	printf '\n[%s]\n' "$1" >> "$TMP"
 }
 
+emit_outbound() {
+	mode=manual
+	config_get mode bind outbound_mode manual
+
+	case "$mode" in
+		manual)
+			emit_scalar bind outbound
+			;;
+		interface)
+			config_get interface bind outbound_interface
+			# Interface names come from UCI; restrict them before using them
+			# as part of the ubus object path.
+			case "$interface" in
+				''|*[!A-Za-z0-9_.-]*) return 0 ;;
+			esac
+
+			address="$(ubus call "network.interface.$interface" status 2>/dev/null | jsonfilter -e '@["ipv4-address"][0].address' 2>/dev/null || true)"
+			# At boot the interface may not have an address yet. Omit outbound
+			# for now; the selected interface's later ifup will regenerate it.
+			[ -n "$address" ] && printf 'outbound=%s\n' "$address" >> "$TMP"
+			;;
+		*)
+			 echo "Invalid bind.outbound_mode: $mode" >&2
+			 return 1
+			;;
+	esac
+}
+
 # [router]
 emit_section router
 emit_scalar router netid
@@ -117,7 +145,7 @@ emit_scalar dns no_resolvconf no-resolvconf bool
 
 # [bind]
 emit_section bind
-emit_scalar bind outbound
+emit_outbound
 
 # [api]
 emit_section api

@@ -12,6 +12,7 @@ config paths 'paths'
 config dns 'dns'
 
 config bind 'bind'
+	option outbound_mode 'manual'
 
 config api 'api'
 

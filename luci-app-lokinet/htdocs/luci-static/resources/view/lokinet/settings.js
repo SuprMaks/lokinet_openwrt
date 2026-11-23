@@ -32,7 +32,7 @@ function addSelect(s, key, title, values, description) {
 
 return view.extend({
 	load: function() {
-		return uci.load('lokinet');
+		return Promise.all([uci.load('lokinet'), uci.load('network')]);
 	},
 
 	render: function() {
@@ -104,8 +104,22 @@ return view.extend({
 
 		s = m.section(form.NamedSection, 'bind', 'bind', _('Socket binding'));
 		s.anonymous = true;
-		addValue(s, 'outbound', _('Outbound bind address'),
+		addSelect(s, 'outbound_mode', _('Outbound binding mode'), [
+			['manual', _('Manual address')],
+			['interface', _('Use interface IPv4 address')]
+		]);
+		var outbound = addValue(s, 'outbound', _('Outbound bind address'),
 			_('IP address and optional port, for example 192.0.2.10:9000.'));
+		outbound.depends('outbound_mode', 'manual');
+		var outboundInterface = s.option(form.ListValue, 'outbound_interface',
+			_('Outbound network interface'),
+			_('Select a logical OpenWrt interface, such as wan. Its current IPv4 address is used.'));
+		outboundInterface.depends('outbound_mode', 'interface');
+		outboundInterface.rmempty = false;
+		uci.sections('network', 'interface').forEach(function(iface) {
+			var name = iface['.name'];
+			outboundInterface.value(name, name);
+		});
 
 		s = m.section(form.NamedSection, 'api', 'api', _('JSON API'));
 		s.anonymous = true;
