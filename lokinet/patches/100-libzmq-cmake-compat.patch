@@ -1,0 +1,12 @@
+--- a/external/oxen-mq/cmake/local-libzmq/LocalLibzmq.cmake
++++ b/external/oxen-mq/cmake/local-libzmq/LocalLibzmq.cmake
+@@ -27,7 +27,8 @@
+     PREFIX ${LIBZMQ_PREFIX}
+     URL ${LIBZMQ_URL}
+     URL_HASH ${LIBZMQ_HASH}
+-    CMAKE_ARGS ${libzmq_compiler_args}
++    CMAKE_ARGS ${libzmq_compiler_args}
++    -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+     -DCMAKE_BUILD_TYPE=Release
+     -DWITH_LIBSODIUM=ON -DZMQ_BUILD_TESTS=OFF -DWITH_PERF_TOOL=OFF -DENABLE_DRAFTS=OFF
+     -DBUILD_SHARED=OFF -DBUILD_STATIC=ON -DWITH_DOC=OFF -DCMAKE_INSTALL_PREFIX=${LIBZMQ_PREFIX}

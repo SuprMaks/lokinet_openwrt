@@ -1,0 +1,11 @@
+{
+	"luci-app-lokinet": {
+		"description": "Grant access to Lokinet configuration",
+		"read": {
+			"uci": [ "lokinet" ]
+		},
+		"write": {
+			"uci": [ "lokinet" ]
+		}
+	}
+}

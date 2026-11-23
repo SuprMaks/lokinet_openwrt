@@ -1,0 +1,139 @@
+#!/bin/sh
+# Generate Lokinet's native INI file from /etc/config/lokinet.
+# Requires OpenWrt's /lib/functions.sh.
+
+IPKG_INSTROOT="${IPKG_INSTROOT:-}"
+
+set -e
+umask 077
+
+. /lib/functions.sh
+
+OUT=/var/lib/lokinet/lokinet.ini
+TMP="${OUT}.tmp"
+UNSET='__LOKINET_UCI_UNSET_7f1c__'
+
+mkdir -p /var/lib/lokinet
+: > "$TMP"
+chmod 600 "$TMP"
+
+config_load lokinet
+
+emit_scalar() {
+	section="$1"
+	uci_option="$2"
+	ini_option="${3:-$2}"
+	kind="${4:-string}"
+
+	config_get value "$section" "$uci_option" "$UNSET"
+	[ "$value" = "$UNSET" ] && return 0
+
+	case "$kind" in
+		bool)
+			case "$value" in
+				1|yes|true|on) value=true ;;
+				0|no|false|off) value=false ;;
+			esac
+			;;
+	esac
+
+	case "$value" in
+		*'
+'*)
+			echo "Newlines are not allowed in $section.$uci_option" >&2
+			return 1
+			;;
+	esac
+
+	printf '%s=%s\n' "$ini_option" "$value" >> "$TMP"
+}
+
+emit_list_item() {
+	printf '%s=%s\n' "$LIST_INI_KEY" "$1" >> "$TMP"
+}
+
+emit_list() {
+	section="$1"
+	uci_option="$2"
+	ini_option="${3:-$2}"
+
+	LIST_INI_KEY="$ini_option"
+	config_list_foreach "$section" "$uci_option" emit_list_item
+}
+
+emit_section() {
+	printf '\n[%s]\n' "$1" >> "$TMP"
+}
+
+# [router]
+emit_section router
+emit_scalar router netid
+emit_scalar router min_connections min-connections
+emit_scalar router max_connections max-connections
+emit_scalar router data_dir data-dir
+emit_scalar router worker_threads worker-threads
+
+# [network]
+emit_section network
+emit_list network strict_connect strict-connect
+emit_scalar network keyfile
+emit_scalar network auth
+emit_scalar network auth_lmq auth-lmq
+emit_scalar network auth_lmq_method auth-lmq-method
+emit_list network auth_whitelist auth-whitelist
+emit_list network auth_file auth-file
+emit_scalar network auth_file_type auth-file-type
+emit_list network auth_static auth-static
+emit_scalar network reachable bool
+emit_scalar network hops
+emit_scalar network paths
+emit_scalar network exit bool
+emit_scalar network owned_range owned-range
+emit_list network traffic_whitelist traffic-whitelist
+emit_list network exit_node exit-node
+emit_list network exit_auth exit-auth
+emit_scalar network auto_routing auto-routing bool
+emit_scalar network blackhole_routes blackhole-routes bool
+emit_scalar network ifname
+emit_scalar network ifaddr
+emit_scalar network ip6_range ip6-range
+emit_list network mapaddr
+emit_list network blacklist_snode blacklist-snode
+emit_list network srv
+emit_scalar network path_alignment_timeout path-alignment-timeout
+emit_scalar network persist_addrmap_file persist-addrmap-file
+
+# [paths]
+emit_section paths
+emit_scalar paths unique_range_size unique-range-size
+
+# [dns]
+emit_section dns
+emit_list dns upstream
+emit_scalar dns l3_intercept l3-intercept bool
+emit_scalar dns bind
+emit_list dns add_hosts add-hosts
+emit_scalar dns no_resolvconf no-resolvconf bool
+
+# [bind]
+emit_section bind
+emit_scalar bind outbound
+
+# [api]
+emit_section api
+emit_scalar api enabled bool
+emit_scalar api bind
+
+# [bootstrap]
+emit_section bootstrap
+emit_scalar bootstrap seed_node seed-node bool
+emit_list bootstrap add_node add-node
+
+# [logging]
+emit_section logging
+emit_scalar logging type
+emit_scalar logging level
+emit_scalar logging file
+
+mv "$TMP" "$OUT"
+chmod 600 "$OUT"

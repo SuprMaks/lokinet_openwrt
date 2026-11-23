@@ -1,0 +1,22 @@
+config router 'router'
+	option netid 'lokinet'
+	option worker_threads '0'
+
+config network 'network'
+	option auto_routing '1'
+	option blackhole_routes '1'
+	option auth_file_type 'plaintext'
+
+config paths 'paths'
+
+config dns 'dns'
+
+config bind 'bind'
+
+config api 'api'
+
+config bootstrap 'bootstrap'
+
+config logging 'logging'
+	option type 'system'
+	option level 'error'

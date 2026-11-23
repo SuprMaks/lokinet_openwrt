@@ -1,0 +1,13 @@
+{
+	"admin/services/lokinet": {
+		"title": "Lokinet",
+		"order": 80,
+		"action": {
+			"type": "view",
+			"path": "lokinet/settings"
+		},
+		"depends": {
+			"acl": [ "luci-app-lokinet" ]
+		}
+	}
+}
